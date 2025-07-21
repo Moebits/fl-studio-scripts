@@ -1,0 +1,41 @@
+from flpianoroll import *
+
+def createDialog():
+    form = ScriptDialog("Delete Every Other Anchor", "Deletes every other note within an anchor interval.")
+    
+    segment_labels = ["1/4 beat", "1/2 beat", "1 beat", "2 beats", "4 beats"]
+    form.AddInputCombo("Anchor", segment_labels, 2)
+    return form
+
+def apply(form):
+    segment_values = [0.25, 0.5, 1.0, 2.0, 4.0]
+    selected_index = form.GetInputValue("Anchor")
+    anchor_length_beats = segment_values[selected_index]
+    anchor_length_ticks = int(anchor_length_beats * score.PPQ)
+
+    selected_notes = [i for i in range(score.noteCount) if score.getNote(i).selected]
+    if not selected_notes:
+        selected_notes = list(range(score.noteCount))
+
+    note_dict = {}
+    for i in selected_notes:
+        note = score.getNote(i)
+        if note.time not in note_dict:
+            note_dict[note.time] = []
+        note_dict[note.time].append(i)
+
+    note_segment_dict = {}
+    for time in note_dict:
+        segment_index = time // anchor_length_ticks
+        if segment_index not in note_segment_dict:
+            note_segment_dict[segment_index] = []
+        note_segment_dict[segment_index].append(time)
+
+    del_notes = []
+    for segment in note_segment_dict.values():
+        for i, time in enumerate(sorted(segment)):
+            if i % 2 == 1:
+                del_notes.extend(note_dict[time])
+
+    for i in sorted(del_notes, reverse=True):
+        score.deleteNote(i)
