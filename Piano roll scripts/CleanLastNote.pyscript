@@ -1,0 +1,18 @@
+from flpianoroll import *
+
+note_dict = {}
+for i in range(score.noteCount):
+    note = score.getNote(i)
+    note.selected = False
+
+    if note.time not in note_dict:
+        note_dict[note.time] = []
+
+    note_dict[note.time].append((i, note))
+
+if note_dict:
+    latest_time = max(note_dict.keys())
+    last_chord = note_dict[latest_time]
+
+    for i, note in sorted(last_chord, reverse=True):
+        score.deleteNote(i)
