@@ -1,0 +1,21 @@
+from flpianoroll import *
+
+note_dict = {}
+for i in range(score.noteCount):
+    note = score.getNote(i)
+    note.selected = False
+
+    if note.time not in note_dict:
+        note_dict[note.time] = []
+
+    note_dict[note.time].append(note)
+
+keep_notes = set()
+for notes in note_dict.values():
+    note = min(notes, key=lambda note: note.number)
+    keep_notes.add(note)
+
+for i in reversed(range(score.noteCount)):
+    note = score.getNote(i)
+    if note not in keep_notes:
+        score.deleteNote(i)

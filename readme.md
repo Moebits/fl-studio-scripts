@@ -1,0 +1,1 @@
+These are some FL Studio scripts such as deleting all top and bottom notes
