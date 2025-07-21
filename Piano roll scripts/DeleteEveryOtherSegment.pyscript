@@ -14,7 +14,11 @@ def apply(form):
     segment_length_ticks = int(segment_length_beats * score.PPQ)
     del_notes = []
 
-    for i in range(score.noteCount):
+    selected_notes = [i for i in range(score.noteCount) if score.getNote(i).selected]
+    if not selected_notes:
+        selected_notes = list(range(score.noteCount))
+
+    for i in selected_notes:
         note = score.getNote(i)
 
         segment_index = note.time // segment_length_ticks

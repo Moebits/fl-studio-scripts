@@ -5,7 +5,7 @@ def createDialog():
 
     chop_labels = ["1/4 beat", "1/2 beat", "1 beat", "2 beats", "4 beats"]
     form.AddInputCombo("Chop Length", chop_labels, 2)
-    form.AddInputKnob("Length Reduction", 0.5, 0.5, 1.0)
+    form.AddInputKnob("Length Reduction", 1.0, 0.5, 1.0)
     return form
 
 def apply(form):
@@ -17,12 +17,16 @@ def apply(form):
     reduction_factor = form.GetInputValue("Length Reduction")
     min_length_ticks = int(chop_length_ticks * 0.5)
 
+    selected_notes = [i for i in range(score.noteCount) if score.getNote(i).selected]
+    if not selected_notes:
+        selected_notes = list(range(score.noteCount))
+
     saved_notes = []
-    for i in range(score.noteCount):
+    for i in selected_notes:
         note = score.getNote(i)
         saved_notes.append(note)
 
-    for i in reversed(range(score.noteCount)):
+    for i in reversed(selected_notes):
         score.deleteNote(i)
 
     for note in saved_notes:
