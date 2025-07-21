@@ -1,0 +1,33 @@
+from enveditor import *
+
+def find_bounds(sample, threshold):
+    start = 0
+    for i in range(sample.Length):
+        silent = True
+        for c in range(sample.NumChans):
+            if abs(sample.GetSampleAt(i, c)) > threshold:
+                silent = False
+                break
+        if not silent:
+            start = i
+            break
+
+    end = sample.Length - 1
+    for i in range(sample.Length - 1, -1, -1):
+        silent = True
+        for c in range(sample.NumChans):
+            if abs(sample.GetSampleAt(i, c)) > threshold:
+                silent = False
+                break
+        if not silent:
+            end = i
+            break
+
+    return start, end
+
+sample = EditorSample
+start, end = find_bounds(sample, 0.001)
+
+if start < end:
+    sample.TrimFromTo(start, end)
+    sample.NormalizeFromTo(0, sample.Length - 1, 1.0)
