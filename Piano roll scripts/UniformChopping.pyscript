@@ -1,0 +1,40 @@
+from flpianoroll import *
+
+def createDialog():
+    form = ScriptDialog("Uniform Chopper", "Chop notes into equal segments")
+
+    chop_labels = ["1/4 beat", "1/2 beat", "1 beat", "2 beats", "4 beats"]
+    form.AddInputCombo("Chop Length", chop_labels, 2)
+    form.AddInputKnob("Length Reduction", 0.5, 0.5, 1.0)
+    return form
+
+def apply(form):
+    chop_values = [0.25, 0.5, 1.0, 2.0, 4.0]
+    selected_index = form.GetInputValue("Chop Length")
+    chop_length_beats = chop_values[selected_index]
+    chop_length_ticks = int(chop_length_beats * score.PPQ)
+
+    reduction_factor = form.GetInputValue("Length Reduction")
+    min_length_ticks = int(chop_length_ticks * 0.5)
+
+    saved_notes = []
+    for i in range(score.noteCount):
+        note = score.getNote(i)
+        saved_notes.append(note)
+
+    for i in reversed(range(score.noteCount)):
+        score.deleteNote(i)
+
+    for note in saved_notes:
+        num_chops = max(1, note.length // chop_length_ticks)
+
+        for c in range(int(num_chops)):
+            chop_time = note.time + c * chop_length_ticks
+            actual_length = min(chop_length_ticks, (note.time + note.length) - chop_time)
+            reduced_length = max(int(actual_length * reduction_factor), min_length_ticks)
+
+            if actual_length > 0:
+                new_note = note.clone()
+                new_note.time = chop_time
+                new_note.length = reduced_length
+                score.addNote(new_note)

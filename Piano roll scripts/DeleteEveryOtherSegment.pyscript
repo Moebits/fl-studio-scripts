@@ -1,0 +1,25 @@
+from flpianoroll import *
+
+def createDialog():
+    form = ScriptDialog("Delete Every Other Segment", "Delete all notes in every other segment")
+
+    segment_labels = ["1/4 beat", "1/2 beat", "1 beat", "2 beats", "4 beats"]
+    form.AddInputCombo("Segment Length", segment_labels, 1)
+    return form
+
+def apply(form):
+    segment_values = [0.25, 0.5, 1.0, 2.0, 4.0]
+    selected_index = form.GetInputValue("Segment Length")
+    segment_length_beats = segment_values[selected_index]
+    segment_length_ticks = int(segment_length_beats * score.PPQ)
+    del_notes = []
+
+    for i in range(score.noteCount):
+        note = score.getNote(i)
+
+        segment_index = note.time // segment_length_ticks
+        if segment_index % 2 == 1:
+            del_notes.append(i)
+
+    for i in reversed(del_notes):
+        score.deleteNote(i)
