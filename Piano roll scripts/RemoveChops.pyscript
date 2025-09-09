@@ -1,0 +1,49 @@
+from flpianoroll import *
+
+selected_notes = [i for i in range(score.noteCount) if score.getNote(i).selected]
+if not selected_notes:
+    selected_notes = list(range(score.noteCount))
+
+notes = [score.getNote(i) for i in selected_notes]
+notes.sort(key=lambda n: (n.time, n.number))
+
+chords_by_time = {}
+for note in notes:
+    chords_by_time.setdefault(note.time, []).append(note)
+chord_times = sorted(chords_by_time.keys())
+
+def chord_signature(chord):
+    return tuple(sorted(n.number for n in chord))
+
+merged_chords = []
+prev_sig = None
+
+for t in chord_times:
+    chord = chords_by_time[t]
+    sig = chord_signature(chord)
+
+    if sig != prev_sig:
+        merged_chords.append((t, chord))
+        prev_sig = sig
+
+extended_notes = []
+for i, (chord_time, chord) in enumerate(merged_chords):
+    if i + 1 < len(merged_chords):
+        next_time = merged_chords[i + 1][0]
+    else:
+        bar_length_ticks = score.PPQ * 4
+        bar_start = (chord_time // bar_length_ticks) * bar_length_ticks
+        next_time = bar_start + bar_length_ticks
+
+    chord_length = max(1, next_time - chord_time)
+
+    for note in chord:
+        new_note = note.clone()
+        new_note.length = chord_length
+        extended_notes.append(new_note)
+
+for i in reversed(selected_notes):
+    score.deleteNote(i)
+
+for note in extended_notes:
+    score.addNote(note)
